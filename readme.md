@@ -16,7 +16,7 @@ A powerful AI-driven Telegram bot for instant skin lesion analysis. Send a photo
 
 1. **Clone the repository:**
    ```powershell
-   git clone <[your-repo-url](https://github.com/sayanth-t-m/Telegram_skin_cancer_detector.git)>
+   git clone (https://github.com/sayanth-t-m/Telegram_skin_cancer_detector.git)
    cd Telegram_skin_cancer_detector
    ```
 
