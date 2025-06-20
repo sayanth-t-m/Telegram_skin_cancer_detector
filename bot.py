@@ -6,6 +6,12 @@ import re
 import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Load model and processor
 processor = AutoImageProcessor.from_pretrained("Anwarkh1/Skin_Cancer-Image_Classification")
@@ -16,10 +22,9 @@ def escape_markdown(text: str) -> str:
     escape_chars = r'_*\[\]()~`>#+-=|{}.!'
     return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
 
-# Get safety + medical info from Gemini API
+# Fetch condition info from Gemini
 def fetch_condition_info(condition: str) -> (str, str):
-    api_key = "AIzaSyBRIF5HEfPQHvMkgKqMZa5ro4g0KL6XJrw"  # 🔐 Replace securely in production
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
     prompt = (
         f"Is '{condition}' cancerous or non-cancerous? Harmful or harmless? "
@@ -28,7 +33,7 @@ def fetch_condition_info(condition: str) -> (str, str):
         f"Then provide a brief explanation for a non-expert."
         f"What are its signs?."
         f"How to treat?."
-        f"What should i do ?."
+        f"What should I do?."
     )
 
     headers = {"Content-Type": "application/json"}
@@ -46,7 +51,7 @@ def fetch_condition_info(condition: str) -> (str, str):
         print(f"[ERROR] Gemini API failed: {e}")
         return "⚠️ Unknown Severity", "Medical information unavailable at this time. Please consult a specialist."
 
-# Format bot's response
+# Format Telegram response
 def format_prediction(label: str, confidence: float, safety: str, info: str) -> str:
     label_esc = escape_markdown(label)
     confidence_esc = escape_markdown(f"{confidence:.2f}%")
@@ -99,14 +104,12 @@ async def classify_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Start the bot
 async def main():
-    bot_token = "7517844216:AAHXuMFID6ojqdmbJu_s6W8yqPZr176HyK8"  # 🔐 Replace securely in production
-    app = ApplicationBuilder().token(bot_token).build()
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(MessageHandler(filters.PHOTO, classify_image))
-
     print("🤖 Skin Diagnosis Bot is live.")
     await app.run_polling(close_loop=False)
 
-# Handle event loop errors
+# Entry point
 if __name__ == "__main__":
     import asyncio
     try:
